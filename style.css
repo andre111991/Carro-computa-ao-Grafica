@@ -1,0 +1,57 @@
+/* 1. Reset básico para remover margens e scrollbars indesejadas */
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Impede que apareçam barras de rolagem */
+    background-color: #546E90; /* Cor de fundo semelhante ao asfalto enquanto carrega */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* 2. Contentor das instruções no topo do ecrã */
+#instructions {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    padding: 15px 25px;
+    background: rgba(0, 0, 0, 0.6); /* Fundo preto semi-transparente */
+    color: white;
+    border-radius: 8px;
+    border: 2px solid #39FF14; /* Borda verde neon para estilo gamer */
+    pointer-events: none; /* Garante que os cliques passem através das instruções */
+    z-index: 100; /* Garante que fique por cima do Canvas 3D */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    display: flex;
+    gap: 20px;
+}
+
+/* 3. Estilo para a tecla (o retângulo da letra C) */
+.key {
+    background-color: #eee;
+    color: #333;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    border-bottom: 3px solid #999;
+    margin-right: 10px;
+    display: inline-block;
+}
+
+/* 4. Estilo para o texto das instruções */
+#instructions > span {
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+}
+
+/* Opcional: Efeito de pulsação leve na borda das instruções */
+@keyframes pulse {
+    0% { border-color: #39FF14; }
+    50% { border-color: #00F5FF; }
+    100% { border-color: #39FF14; }
+}
+
+#instructions {
+    animation: pulse 3s infinite ease-in-out;
+}
