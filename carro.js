@@ -9,7 +9,8 @@ const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// 2. Luzes
+// ...................................................................Luzes
+
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
 scene.add(ambientLight);
 
@@ -17,7 +18,8 @@ const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
 directionalLight.position.set(100, 200, 300);
 scene.add(directionalLight);
 
-// 3. Câmera e Controlos
+// ......................................... Câmera e Controlos
+
 const aspectRatio = window.innerWidth / window.innerHeight;
 const camera = new THREE.PerspectiveCamera(75, aspectRatio, 0.1, 2000);
 
@@ -29,12 +31,15 @@ controls.enableDamping = true;
 controls.target.set(0, 0, 15);
 controls.update();
 
+//..............................................................Carro cores 
 
 const ListaCores = [0x00F5FF, 0xFF00FF, 0x7000FF, 0xFF5F1F, 0x39FF14, 0xFF3131];
 
 function Colors(array) {
     return array[Math.floor(Math.random() * array.length)];
 }
+
+//...............................................texturas e rodas...........
 
 function WheelTexture() {
     const canvas = document.createElement("canvas");
@@ -51,19 +56,19 @@ function WheelTexture() {
 }
 
 function Wheel() {
-    // A geometria do cilindro é criada no eixo Y por padrão
+    
     const geometry = new THREE.CylinderGeometry(8, 8, 15, 32);
     const texturaRoda = WheelTexture();
     const materiais = [
-        new THREE.MeshLambertMaterial({ color: 0xddeeff }), // Lateral do pneu
-        new THREE.MeshLambertMaterial({ map: texturaRoda }), // Face externa
-        new THREE.MeshLambertMaterial({ map: texturaRoda })  // Face interna
+        new THREE.MeshLambertMaterial({ color: 0x000000 }), // Lateral do pneu
+        new THREE.MeshLambertMaterial({ map: texturaRoda }), // Lado Esquerdo
+        new THREE.MeshLambertMaterial({ map: texturaRoda })  // Lado Direito
     ];
     const wheel = new THREE.Mesh(geometry, materiais);
     
-    // Rotacionamos a malha para que ela fique virada para o lado
-    // No sistema Z-up, rotacionamos no eixo Y para ficar de lado
-    wheel.rotation.y = Math.PI / 2;
+    wheel.rotation.y = Math.PI / 2; 
+    wheel.rotation.x = Math.PI / 2;
+    wheel.rotation.z = Math.PI / 2;
     return wheel;
 }
 
@@ -125,6 +130,8 @@ function texturaMatriculas(text = "84-57-OM") {
     return new THREE.CanvasTexture(canvas);
 }
 
+// ..............................................................Carro montagem
+
 function Car() {
     const car = new THREE.Group();
     const CorCarro = Colors(ListaCores);
@@ -174,93 +181,88 @@ function Car() {
 
     wheelPositions.forEach((pos) => {
         const wheel = Wheel();
-        
-        // 1. Primeiro, deitamos o cilindro no eixo X
-        wheel.rotation.x = Math.PI / 2;
-        
-        // 2. Agora, rodamos 90 graus no eixo Z (que é o seu eixo "Cima")
-        // Isso faz com que as jantes fiquem viradas para os lados do carro
-        wheel.rotation.z = Math.PI / 2;
 
         wheel.position.set(pos.x, pos.y, 8);
         car.add(wheel);
     });
 
-    // 4. Capô
-    const hoodLength = 34;
+
     const hoodPivot = new THREE.Group();
     hoodPivot.position.set(15.5, 0, 28); 
     
     const hood = new THREE.Mesh(
-        new THREE.BoxGeometry(hoodLength, 48, 2), 
+        new THREE.BoxGeometry(34, 48, 2), 
         new THREE.MeshLambertMaterial({ color: 0x111111 })
     );
-    hood.position.set(hoodLength / 2, 0, 0);
+    hood.position.set(17, 0, 0);
     hoodPivot.add(hood);
     car.add(hoodPivot);
 
-    // 5. Portas
+    
     const leftDoorGroup = new THREE.Group();
-    const leftDoorMesh = new THREE.Mesh(
+    const leftDoor = new THREE.Mesh(
         new THREE.BoxGeometry(40, 1.5, 15), 
         new THREE.MeshLambertMaterial({ color: 0x111111 })
     );
-    leftDoorMesh.position.set(-20, 0, 7.5); 
-    leftDoorGroup.add(leftDoorMesh);
+
+    leftDoor.position.set(-20, 0, 7.5); 
+    leftDoorGroup.add(leftDoor);
     leftDoorGroup.position.set(15, 25, 12);
     car.add(leftDoorGroup);
 
     const rightDoorGroup = new THREE.Group();
-    const rightDoorMesh = new THREE.Mesh(
+    const rightDoor = new THREE.Mesh(
         new THREE.BoxGeometry(40, 1.5, 15),
         new THREE.MeshLambertMaterial({ color: 0x111111 })
     );
-    rightDoorMesh.position.set(-20, 0, 7.5);
-    rightDoorGroup.add(rightDoorMesh);
+
+    rightDoor.position.set(-20, 0, 7.5);
+    rightDoorGroup.add(rightDoor);
     rightDoorGroup.position.set(15, -25, 12);
     car.add(rightDoorGroup);
 
-    // 6. Faróis na frente do carro
     const farolGeometry = new THREE.SphereGeometry(4, 16, 16);
-    const farolMaterial = new THREE.MeshPhongMaterial({ 
-        color: 0xffffaa,
-        emissive: 0xffff00,
-        emissiveIntensity: 0.3
+    const farolMaterial = new THREE.MeshPhongMaterial({ // reage com luz
+        color: 0xffffaa, //cor base do farol
+        emissive: 0xffff00, // cor da luz emitida
+        emissiveIntensity: 0.3 //intensidade do brilho
     });
-    
-    // Farol esquerdo
+
+
     const farolEsquerdo = new THREE.Mesh(farolGeometry, farolMaterial);
     farolEsquerdo.position.set(50, -18, 20);
     car.add(farolEsquerdo);
     
-    //Farol direito
+
     const farolDireito = new THREE.Mesh(farolGeometry, farolMaterial);
     farolDireito.position.set(50, 18, 20);
     car.add(farolDireito);
 
-    // 7. Matrícula da frente
+
     const matriculadaFrenteTextura = texturaMatriculas("84-57-OM");
     const matriculaFrente = new THREE.Mesh(
         new THREE.PlaneGeometry(20, 8),
         new THREE.MeshLambertMaterial({ map: matriculadaFrenteTextura })
     );
+
     matriculaFrente.position.set(50.5, 0, 12); // Frente do carro, centro, abaixo dos faróis
     matriculaFrente.rotation.y = Math.PI / 2; // Rodar para ficar virado para a frente
     matriculaFrente.rotation.z = Math.PI / 2; // Rodar 90 graus no eixo Z
     car.add(matriculaFrente);
 
-    // 8. Matrícula de trás
+
     const matriculadaTrasTextura = texturaMatriculas("84-57-OM");
     const matriculaTras = new THREE.Mesh(
         new THREE.PlaneGeometry(20, 8),
         new THREE.MeshLambertMaterial({ map: matriculadaTrasTextura })
     );
+
     matriculaTras.position.set(-50.5, 0, 12); // Trás do carro, centro
     matriculaTras.rotation.y = -Math.PI / 2; // Rodar para ficar virado para trás
-    matriculaTras.rotation.z = Math.PI / 2 + Math.PI; // Rodar 90 graus + 180 graus (total 270 graus) no eixo Z
+    matriculaTras.rotation.z = Math.PI / 2 + Math.PI; //270 graus no eixo Z
     car.add(matriculaTras);
 
-    // 9. Escovas de limpa-vidros (base fixa no capô, parte superior roda)
+ 
     const wiperMaterial = new THREE.MeshLambertMaterial({ color: 0x333333 });
     
     // Escova esquerda
@@ -269,9 +271,9 @@ function Car() {
     leftWiperBase.position.set(13, -15, 32); // Ligeiramente para fora
     leftWiperBase.rotation.y = Math.PI / 2; // Virado para a frente
     
-    // Base fixa (parte inferior que fica fixa no capô)
+    //Base 
     const leftWiperBaseMesh = new THREE.Mesh(
-        new THREE.BoxGeometry(0.5, 0.5, 3), // Base pequena fixa
+        new THREE.BoxGeometry(0.5, 0.5, 3), 
         wiperMaterial
     );
     leftWiperBaseMesh.position.z = 1.5; // Base na parte inferior
@@ -279,7 +281,7 @@ function Car() {
     
     // Grupo para a parte superior que roda (pivot na base)
     const leftWiperRotating = new THREE.Group();
-    leftWiperRotating.position.z = 3; // Pivot na parte superior da base
+    leftWiperRotating.position.z = 3;
     leftWiperBase.add(leftWiperRotating);
     
     // Parte superior da escova que roda
@@ -287,7 +289,7 @@ function Car() {
         new THREE.BoxGeometry(20, 2, 0.5), // Parte superior da escova
         wiperMaterial
     );
-    leftWiperTop.position.z = 0; // Começa na posição da base
+    leftWiperTop.position.z = 0;
     leftWiperRotating.add(leftWiperTop);
     
     car.add(leftWiperBase);
@@ -298,109 +300,118 @@ function Car() {
     rightWiperBase.position.set(13, 15, 32); 
     rightWiperBase.rotation.y = Math.PI / 2; 
     
-    // Base fixa (parte inferior que fica fixa no capô)
+    
     const rightWiperBaseMesh = new THREE.Mesh(
-        new THREE.BoxGeometry(0.5, 0.5, 3), // Base pequena fixa
+        new THREE.BoxGeometry(0.5, 0.5, 3),
         wiperMaterial
     );
-    rightWiperBaseMesh.position.z = 1.5; // Base na parte inferior
+    rightWiperBaseMesh.position.z = 1.5; 
     rightWiperBase.add(rightWiperBaseMesh);
     
-    // Grupo para a parte superior que roda (pivot na base)
+    
     const rightWiperRotating = new THREE.Group();
-    rightWiperRotating.position.z = 3; // Pivot na parte superior da base
+    rightWiperRotating.position.z = 3; 
     rightWiperBase.add(rightWiperRotating);
     
     // Parte superior da escova que roda
     const rightWiperTop = new THREE.Mesh(
-        new THREE.BoxGeometry(20, 2, 0.5), // Parte superior da escova
+        new THREE.BoxGeometry(20, 2, 0.5), 
         wiperMaterial
     );
-    rightWiperTop.position.z = 0; // Começa na posição da base
+    rightWiperTop.position.z = 0; 
     rightWiperRotating.add(rightWiperTop);
     
     car.add(rightWiperBase);
 
-    return {
-        mesh: car,
+    return { //foi feito assim para facilitar a animaçao das portas e capo e escovas
+        mesh: car, //pai
         leftDoor: leftDoorGroup,
         rightDoor: rightDoorGroup,
-        hoodPivot: hoodPivot,
+        hoodPivot: hoodPivot,                   //filhos
         leftWiperRotating: leftWiperRotating,
         rightWiperRotating: rightWiperRotating,
     };
 }
-// 6. Instanciar e Animar
-const carData = Car();
-scene.add(carData.mesh);
+//.............................................................logica
+const carro = Car();
+scene.add(carro.mesh);
 
-// 7. Controlo do Capô e Portas
+
 let hoodOpen = false;
-const maxHoodAngle = Math.PI * 0.4; //70 graus
-
 let doorsOpen = false;
+
+const maxHoodAngle = Math.PI * 0.4; //70 graus
 const maxDoorAngle = Math.PI * 0.4; //70 graus
 
 document.addEventListener('keydown', (event) => {
     if (event.key.toLowerCase() === 'c') {
-        hoodOpen = !hoodOpen;
+        hoodOpen = !hoodOpen; //capo aberto passa para fechado
     }
     if (event.key.toLowerCase() === 'p') {
-        doorsOpen = !doorsOpen;
+        doorsOpen = !doorsOpen; //Portas abertas passam para fechado
     }
+});
+
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
 function animate() {
     requestAnimationFrame(animate);
     
-    const time = Date.now() * 0.003;
+    const time = Date.now() * 0.003; //usei para animaçao das escovas para nao ter de escrever escova vai para a direita(angulo) 
+    //quando chegar a direita vais ate a esquerda(angulo negativo)
 
-    // Portas abrem/fecham com a tecla "p" (abrem para fora)
-    const targetDoorAngle = doorsOpen ? maxDoorAngle : 0;
-    // Interpolação suave para movimento natural
-    carData.leftDoor.rotation.z = THREE.MathUtils.lerp(
-        carData.leftDoor.rotation.z,
+    let targetDoorAngle;
+
+    if (doorsOpen === true) {
+        targetDoorAngle = maxDoorAngle; // Abre a porta até ao ângulo máximo
+    } else {
+        targetDoorAngle = 0;  // Fecha a porta (ângulo zero)
+    } 
+
+    // Interpolação - vai do angulo atual,no caso 0, para o angulo alvo (maxDoorAngle(70) ou 0)
+    carro.leftDoor.rotation.z = THREE.MathUtils.lerp( //lerp(valor atual, valor alvo, velocidade)
+        carro.leftDoor.rotation.z, 
         -targetDoorAngle, // Negativo para abrir para fora
         0.1
     );
-    carData.rightDoor.rotation.z = THREE.MathUtils.lerp(
-        carData.rightDoor.rotation.z,
+    
+    carro.rightDoor.rotation.z = THREE.MathUtils.lerp(
+        carro.rightDoor.rotation.z,
         targetDoorAngle, // Positivo para abrir para fora
         0.1
     );
     
-    // Capô abre/fecha com a tecla "c" (abre em direção à frente do carro)
-    const targetHoodAngle = hoodOpen ? maxHoodAngle : 0;
-    // Interpolação suave para movimento natural
-    // Rotação no eixo Y para abrir para a frente do carro (não para o lado)
-    carData.hoodPivot.rotation.y = THREE.MathUtils.lerp(
-        carData.hoodPivot.rotation.y, 
-        -targetHoodAngle, // Negativo para abrir para fora (contrário de dentro)
+    
+    let targetHoodAngle;
+
+    if (hoodOpen === true) {
+        targetHoodAngle = maxHoodAngle;
+    } else {
+        targetHoodAngle = 0;
+    }
+    
+    carro.hoodPivot.rotation.y = THREE.MathUtils.lerp(
+        carro.hoodPivot.rotation.y, 
+        -targetHoodAngle, 
         0.1
     );
     
-    // Animação das escovas de limpa-vidros (movimento de vaivém em arco)
+    
     const wiperSpeed = time * 1.5; // Velocidade das escovas
-    // Movimento de vaivém: sin vai de -1 a 1, criando movimento cíclico
-    const wiperSin = Math.sin(wiperSpeed);
-    // O movimento vai de -máximo a +máximo, criando o vaivém em arco
-    // Apenas a parte superior da escova roda (a base fica fixa no capô)
-    const maxAngle = 0.85; // ~49 graus
+    const wiperSin = Math.sin(wiperSpeed); //funçao seno, tanto faz ser seno como cosseno, so quero um valor que oscile entre -1 e 1
+    const maxAngle = 0.85; // 49 graus
     
     // Escova esquerda - apenas a parte superior roda (a base fica fixa)
-    carData.leftWiperRotating.rotation.z = wiperSin * maxAngle;
+    carro.leftWiperRotating.rotation.z = wiperSin * maxAngle;
     
     // Escova direita - movimento igual à esquerda (ambas na mesma direção)
-    carData.rightWiperRotating.rotation.z = wiperSin * maxAngle;
+    carro.rightWiperRotating.rotation.z = wiperSin * maxAngle;
     
     controls.update();
     renderer.render(scene, camera);
 }
 
 animate();
-
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-});
