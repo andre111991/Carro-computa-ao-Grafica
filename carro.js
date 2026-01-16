@@ -40,129 +40,162 @@ function Colors(array) {
 
 function FrontTexture() {
     const canvas = document.createElement("canvas");
-    canvas.width = 64; canvas.height = 32;
+    canvas.width = 128; // Dobrada a resolução
+    canvas.height = 64;
     const context = canvas.getContext("2d");
-    context.fillStyle = "#ffffff"; context.fillRect(0, 0, 64, 32);
-    context.fillStyle = "#666666"; context.fillRect(8, 8, 48, 24);
+
+    // Fundo (Cor do carro/Estrutura)
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, 128, 64);
+
+    // Vidro (Janela)
+    context.fillStyle = "#333333";
+    // x, y, largura, altura
+    context.fillRect(10, 10, 108, 44); 
+    
     return new THREE.CanvasTexture(canvas);
 }
 
 function SideTexture() {
     const canvas = document.createElement("canvas");
-    canvas.width = 128; canvas.height = 32;
+    canvas.width = 256; // Aumentado para manter nitidez
+    canvas.height = 64;
     const context = canvas.getContext("2d");
-    context.fillStyle = "#ffffff"; context.fillRect(0, 0, 128, 32);
-    context.fillStyle = "#666666"; context.fillRect(10, 8, 38, 24);
-    context.fillRect(58, 8, 60, 24);
+
+    // Fundo
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, 256, 64);
+
+    // Janela 1 (Frente)
+    context.fillStyle = "#333333";
+    context.fillRect(15, 10, 100, 44);
+
+    // Janela 2 (Trás)
+    context.fillRect(130, 10, 110, 44);
+
+    return new THREE.CanvasTexture(canvas);
+}
+
+function WheelTexture() {
+    const canvas = document.createElement("canvas");
+    canvas.width = 128;
+    canvas.height = 128;
+    const context = canvas.getContext("2d");
+
+    // Pneu (Fundo Preto)
+    context.fillStyle = "#111111";
+    context.fillRect(0, 0, 128, 128);
+
+    // Jante (Círculo Cinza)
+    context.beginPath();
+    context.arc(64, 64, 45, 0, Math.PI * 2);
+    context.fillStyle = "#666666";
+    context.fill();
+
+    // Detalhe central (Círculo mais escuro)
+    context.beginPath();
+    context.arc(64, 64, 10, 0, Math.PI * 2);
+    context.fillStyle = "#333333";
+    context.fill();
+
     return new THREE.CanvasTexture(canvas);
 }
 
 function Wheel() {
-    return new THREE.Mesh(
-        new THREE.BoxGeometry(12, 33, 12),
-        new THREE.MeshLambertMaterial({ color: 0x333333 })
-    );
+    const geometry = new THREE.CylinderGeometry(8, 8, 15, 32);
+    const texturaRoda = WheelTexture();
+
+    const materiais = [
+        new THREE.MeshLambertMaterial({ color: 0x111111 }), // Lateral (pneu)
+        new THREE.MeshLambertMaterial({ map: texturaRoda }), // Topo (jante)
+        new THREE.MeshLambertMaterial({ map: texturaRoda })  // Base (jante)
+    ];
+
+    const wheel = new THREE.Mesh(geometry, materiais);
+    return wheel;
 }
 
-// 5. Construção do Carro
 function Car() {
     const car = new THREE.Group();
     const CorCarro = Colors(ListaCores);
 
-    // Corpo Principal
+    // 1. Corpo Principal (Chassi)
+    // Subi o chassi para Z=18 para dar espaço às rodas em baixo
     const main = new THREE.Mesh(
-        new THREE.BoxGeometry(60, 30, 15),
+        new THREE.BoxGeometry(100, 50, 20),
         new THREE.MeshLambertMaterial({ color: CorCarro })
     );
-    main.position.z = 12;
+    main.position.z = 18; 
     car.add(main);
 
+    // 2. Cabine
     const TexturaFrenteCarro = FrontTexture();
-    TexturaFrenteCarro.center = new THREE.Vector2(0.5, 0.5);
+    TexturaFrenteCarro.center.set(0.5, 0.5);
     TexturaFrenteCarro.rotation = Math.PI / 2;
 
-    const TexturaTrasCarro = FrontTexture();
-    TexturaTrasCarro.center = new THREE.Vector2(0.5, 0.5); // usei para poder rodar a textura senao ele roda como eixo no canto inferior esquerdo e para poder rodar a textura no meio
-    TexturaTrasCarro.rotation = -Math.PI / 2;
-
-    const TexturaLadoEsquerdoCarro = SideTexture();
-    TexturaLadoEsquerdoCarro.flipY = false;
-
-    const TexturaLadoDireitoCarro = SideTexture();
-
-    // Rodas
-    const frontWheel = Wheel()
-    frontWheel.position.x = 18;
-    car.add(frontWheel);
-    
-    const backWheel = Wheel()
-    backWheel.position.x = -18
-    car.add(backWheel);
-
-
-    // Cabine com Texturas
-    const cabin = new THREE.Mesh( new THREE.BoxGeometry(33,24,12),[   // map é usado como o color só que serve para embrulhar um objeto 2d em 3d (Canvas das janelas do carro)
+    const cabin = new THREE.Mesh(new THREE.BoxGeometry(55, 45, 20), [
         new THREE.MeshLambertMaterial({ map: TexturaFrenteCarro }),
-        new THREE.MeshLambertMaterial({ map: TexturaTrasCarro }),
-        new THREE.MeshLambertMaterial({ map: TexturaLadoEsquerdoCarro }),
-        new THREE.MeshLambertMaterial({ map: TexturaLadoDireitoCarro }),
-        new THREE.MeshLambertMaterial({ color: 0xffffff }), // teto
-        new THREE.MeshLambertMaterial({ color: 0xffffff }) // debaixo do cubo
+        new THREE.MeshLambertMaterial({ map: FrontTexture() }),
+        new THREE.MeshLambertMaterial({ map: SideTexture() }),
+        new THREE.MeshLambertMaterial({ map: SideTexture() }),
+        new THREE.MeshLambertMaterial({ color: 0xffffff }), 
+        new THREE.MeshLambertMaterial({ color: 0xffffff })  
     ]);
-
-    cabin.position.set(-6, 0, 25.5);
+    cabin.position.set(-12, 0, 38); // Acompanha a subida do chassi
     car.add(cabin);
 
+    // 3. RODAS (Ajustadas para baixo)
+    const wheelX = 38; 
+    const wheelY = 22; 
+    const wheelPositions = [
+        { x: wheelX, y: wheelY }, { x: wheelX, y: -wheelY },
+        { x: -wheelX, y: wheelY }, { x: -wheelX, y: -wheelY }
+    ];
+
+    wheelPositions.forEach(pos => {
+        const wheel = Wheel();
+        // Z menor faz a roda ficar mais para baixo em relação ao corpo
+        // Em 7.5 ela toca o ponto zero da cena
+        wheel.position.set(pos.x, pos.y, 7.5); 
+        car.add(wheel);
+    });
+
+    // 4. Capô (Acompanha a altura do chassi)
+    const hoodLength = 34; 
     const hoodGroup = new THREE.Group();
-        const hood = new THREE.Mesh(
-            new THREE.BoxGeometry(25, 30, 3), 
-            new THREE.MeshLambertMaterial({ color: 0x000000 })
-        );
-        hood.position.x = 12.5; // Metade do comprimento do capô (centro do capô)
-        hood.position.y = 0;
-        hood.position.z = 1.5; // Metade da altura do capô
-        hoodGroup.add(hood);
-        
-        hoodGroup.position.x = 5; // Parte traseira do capô (beira do vidro)
-        hoodGroup.position.y = 0;
-        hoodGroup.position.z = 19.5; // Parte superior do carro (topo do main)
-        hoodGroup.rotation.y = 0; // Inicialmente fechado (rotação em Y, negativo abre para cima)
-        car.add(hoodGroup);
+    const hood = new THREE.Mesh(
+        new THREE.BoxGeometry(hoodLength, 48, 2), 
+        new THREE.MeshLambertMaterial({ color: 0x111111 })
+    );
+    
+    hood.position.x = hoodLength / 2;
+    hoodGroup.add(hood);
+    hoodGroup.position.set(15.5, 0, 28); // Ajustado para o topo do chassi
+    car.add(hoodGroup);
 
-        const leftDoorGroup = new THREE.Group();
-        const leftDoor = new THREE.Mesh(
-            new THREE.BoxGeometry(3, 20, 12), // Largura, altura, profundidade
-            new THREE.MeshLambertMaterial({ color: 0x000000 })
-        );
-        
-        leftDoor.position.x = 0;
-        leftDoor.position.y = 1.5; 
-        leftDoor.position.z = 6; 
-        leftDoorGroup.add(leftDoor);
-        
-        leftDoorGroup.position.x = 0;
-        leftDoorGroup.position.y = -15; 
-        leftDoorGroup.position.z = 0;
-        leftDoorGroup.rotation.z = 0; 
-        car.add(leftDoorGroup);
+    // 5. Portas (Ajustadas para a nova altura do chassi)
+    const doorYPos = 25;
+    const doorZPos = 10; // Subiu junto com o chassi
 
-        
-        const rightDoorGroup = new THREE.Group();
-        const rightDoor = new THREE.Mesh(
-            new THREE.BoxGeometry(3, 20, 12),
-            new THREE.MeshLambertMaterial({ color: CorCarro })
-        );
-        
-        rightDoor.position.x = 0;
-        rightDoor.position.y = -1.5; 
-        rightDoor.position.z = 6; 
-        rightDoorGroup.add(rightDoor);
-        
-        rightDoorGroup.position.x = 0;
-        rightDoorGroup.position.y = 15; 
-        rightDoorGroup.position.z = 0;
-        rightDoorGroup.rotation.z = 0; 
-        car.add(rightDoorGroup);
+    const leftDoorGroup = new THREE.Group();
+    const leftDoor = new THREE.Mesh(
+        new THREE.BoxGeometry(40, 1.5, 15), 
+        new THREE.MeshLambertMaterial({ color: 0x111111 })
+    );
+    leftDoor.position.set(-20, 0, 7.5); 
+    leftDoorGroup.add(leftDoor);
+    leftDoorGroup.position.set(15, doorYPos, doorZPos);
+    car.add(leftDoorGroup);
+
+    const rightDoorGroup = new THREE.Group();
+    const rightDoor = new THREE.Mesh(
+        new THREE.BoxGeometry(40, 1.5, 15),
+        new THREE.MeshLambertMaterial({ color: 0x111111 })
+    );
+    rightDoor.position.set(-20, 0, 7.5);
+    rightDoorGroup.add(rightDoor);
+    rightDoorGroup.position.set(15, -doorYPos, doorZPos);
+    car.add(rightDoorGroup);
 
     return car;
 }
