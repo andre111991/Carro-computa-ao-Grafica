@@ -67,7 +67,7 @@ function Wheel() {
     const wheel = new THREE.Mesh(geometry, materiais);
     
     wheel.rotation.y = Math.PI / 2; 
-    wheel.rotation.x = Math.PI / 2;
+    wheel.rotation.x = Math.PI / 2; // rotaçoes na roda sobre ela mesma
     wheel.rotation.z = Math.PI / 2;
     return wheel;
 }
@@ -175,8 +175,10 @@ function Car() {
     const wheelX = 35; 
     const wheelY = 25; 
     const wheelPositions = [
-        { x: wheelX, y: wheelY }, { x: wheelX, y: -wheelY },
-        { x: -wheelX, y: wheelY }, { x: -wheelX, y: -wheelY }
+        { x: wheelX, y: wheelY }, // frente direita
+        { x: wheelX, y: -wheelY }, // trás direita
+        { x: -wheelX, y: wheelY }, // frente esquerda
+        { x: -wheelX, y: -wheelY } // trás esquerda
     ];
 
     wheelPositions.forEach((pos) => {
@@ -272,7 +274,7 @@ function Car() {
     leftWiperBase.rotation.y = Math.PI / 2; // Virado para a frente
     
     //Base 
-    const leftWiperBaseMesh = new THREE.Mesh(
+    const leftWiperBaseMesh = new THREE.Mesh( //base pregada ao carro
         new THREE.BoxGeometry(0.5, 0.5, 3), 
         wiperMaterial
     );
@@ -280,8 +282,8 @@ function Car() {
     leftWiperBase.add(leftWiperBaseMesh);
     
     // Grupo para a parte superior que roda (pivot na base)
-    const leftWiperRotating = new THREE.Group();
-    leftWiperRotating.position.z = 3;
+    const leftWiperRotating = new THREE.Group(); // Tudo o que estiver aqui dentro vai girar a partir deste ponto
+    leftWiperRotating.position.z = 3; // sem geometria, apenas o ponto de rotação
     leftWiperBase.add(leftWiperRotating);
     
     // Parte superior da escova que roda
@@ -291,6 +293,8 @@ function Car() {
     );
     leftWiperTop.position.z = 0;
     leftWiperRotating.add(leftWiperTop);
+
+    // dava para por o top e o rotating juntos mas teria de usar .geometry.translate, fiz assim pois se quisesse aumentar a escova era mais facil ou o ponto de rotaçao
     
     car.add(leftWiperBase);
 
@@ -372,13 +376,13 @@ function animate() {
     } 
 
     // Interpolação - vai do angulo atual,no caso 0, para o angulo alvo (maxDoorAngle(70) ou 0)
-    carro.leftDoor.rotation.z = THREE.MathUtils.lerp( //lerp(valor atual, valor alvo, velocidade)
+    carro.leftDoor.rotation.z = THREE.MathUtils.lerp( //lerp(valor atual, valor alvo, velocidade) lerp do three.js
         carro.leftDoor.rotation.z, 
         -targetDoorAngle, // Negativo para abrir para fora
         0.1
     );
     
-    carro.rightDoor.rotation.z = THREE.MathUtils.lerp(
+    carro.rightDoor.rotation.z = THREE.MathUtils.lerp( //O lerp é a fórmula matemática que calcula onde o objeto deve estar em cada frame dessa animação
         carro.rightDoor.rotation.z,
         targetDoorAngle, // Positivo para abrir para fora
         0.1
