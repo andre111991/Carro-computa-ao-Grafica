@@ -11,11 +11,11 @@ document.body.appendChild(renderer.domElement);
 
 // ...................................................................Luzes
 
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-scene.add(ambientLight);
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); // ambientlight ilumina todos os objetos igualmente
+scene.add(ambientLight);                                    // sem sombras
 
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-directionalLight.position.set(100, 200, 300);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); // luz direcional simula o sol
+directionalLight.position.set(100, 200, 300);                   // cria sombras e profundidade, mas nao deu tempo          
 scene.add(directionalLight);
 
 // ......................................... Câmera e Controlos
@@ -98,10 +98,10 @@ function SideTexture() {
     const context = canvas.getContext("2d");
 
     context.fillStyle = "#ffffff";
-    context.fillRect(0, 0, 256, 64);
+    context.fillRect(0, 0, 256, 64); // retangulo branco (base)
 
-    context.fillStyle = "#333333";
-    context.fillRect(15, 10, 100, 44);
+    context.fillStyle = "#333333"; // a cor para cinza escuro
+    context.fillRect(15, 10, 100, 44); // Retângulo cinza das janelas
     context.fillRect(130, 10, 110, 44);
 
     return new THREE.CanvasTexture(canvas);
@@ -122,9 +122,9 @@ function texturaMatriculas(text = "84-57-OM") {
     context.strokeRect(2, 2, 124, 36);
     
     context.fillStyle = "#000000";
-    context.font = "bold 20px Arial";
-    context.textAlign = "center";
-    context.textBaseline = "middle";
+    context.font = "bold 20px Arial"; //texto em negrito 20px Arial
+    context.textAlign = "center"; //alinhamento horizontal
+    context.textBaseline = "middle"; // alinhamento vertical
     context.fillText(text, 64, 20);
     
     return new THREE.CanvasTexture(canvas);
@@ -207,9 +207,9 @@ function Car() {
         new THREE.MeshLambertMaterial({ color: 0x111111 })
     );
 
-    leftDoor.position.set(-20, 0, 7.5); 
+    leftDoor.position.set(-20, 0, 7.5); // posiçao da porta relativa ao grupo 
     leftDoorGroup.add(leftDoor);
-    leftDoorGroup.position.set(15, 25, 12);
+    leftDoorGroup.position.set(15, 25, 12); // posiçao do grupo e relativa ao centro do carro
     car.add(leftDoorGroup);
 
     const rightDoorGroup = new THREE.Group();
@@ -286,7 +286,7 @@ function Car() {
     leftWiperRotating.position.z = 3; // sem geometria, apenas o ponto de rotação
     leftWiperBase.add(leftWiperRotating);
     
-    // Parte superior da escova que roda
+    // Parte superior da escova tamanho e material
     const leftWiperTop = new THREE.Mesh(
         new THREE.BoxGeometry(20, 2, 0.5), // Parte superior da escova
         wiperMaterial
